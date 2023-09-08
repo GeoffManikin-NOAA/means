@@ -1,0 +1,111 @@
+#!/bin/ksh
+#@ output = /meso/save/wx20mg/monthly_mean/namweekly.out
+#@ error = /meso/save/wx20mg/monthly_mean/namweekly.err
+#@ job_type = parallel
+#@ class = devhigh
+#@ group = devonprod
+#@ total_tasks = 1
+#@ resources = ConsumableCpus(1) ConsumableMemory(2 GB)
+#@ account_no=NAM-T2O
+#@ wall_clock_limit = 00:49:00
+#@ network.MPI = sn_all,shared,us
+#@ queue
+#
+
+mkdir /stmp/wx20mg/namweekly
+rm /stmp/wx20mg/namweekly/*
+cd /stmp/wx20mg/namweekly
+cp /meso/save/wx20mg/gempak/nagrib/*tbl .
+
+tmp1=2013052500
+day1=`echo $tmp1 | cut -c1-8`
+tmp2="`/meso/save/wx20mg/board/advtime ${tmp1} 24 -1`"
+day2=`echo $tmp2 | cut -c1-8`
+tmp3="`/meso/save/wx20mg/board/advtime ${tmp2} 24 -1`"
+day3=`echo $tmp3 | cut -c1-8`
+tmp4="`/meso/save/wx20mg/board/advtime ${tmp3} 24 -1`"
+day4=`echo $tmp4 | cut -c1-8`
+tmp5="`/meso/save/wx20mg/board/advtime ${tmp4} 24 -1`"
+day5=`echo $tmp5 | cut -c1-8`
+tmp6="`/meso/save/wx20mg/board/advtime ${tmp5} 24 -1`"
+day6=`echo $tmp6 | cut -c1-8`
+tmp7="`/meso/save/wx20mg/board/advtime ${tmp6} 24 -1`"
+day7=`echo $tmp7 | cut -c1-8`
+
+cycles="00 06 12 18"
+for cyc in $cycles; do
+hours="00 06 12 18 24 30 36 42 48 54 60 66 72 78 84"
+hours="48 60 84"
+set -x
+for fhr in $hours; do
+
+COMOUT=/meso/noscrub/wx20mg/monthly/nam
+COMIN=/meso/noscrub/wx20mg/monthly/nam
+EXECutil=/nwprod/util/exec
+EXEC=/meso/save/wx20mg/monthly_mean/exec
+mkdir $COMOUT
+
+# Set up some constants
+export XLFRTEOPTS="unit_vars=yes"
+export tmmark=tm00
+export MP_SHARED_MEMORY=yes
+
+cp ${COMIN}/nammean_${day1}${cyc}V${fhr} NAM1
+$EXECutil/grbindex NAM1 NAM1I 
+cp ${COMIN}/nammean_${day2}${cyc}V${fhr} NAM2
+$EXECutil/grbindex NAM2 NAM2I
+cp ${COMIN}/nammean_${day3}${cyc}V${fhr} NAM3
+$EXECutil/grbindex NAM3 NAM3I
+cp ${COMIN}/nammean_${day4}${cyc}V${fhr} NAM4
+$EXECutil/grbindex NAM4 NAM4I
+cp ${COMIN}/nammean_${day5}${cyc}V${fhr} NAM5
+$EXECutil/grbindex NAM5 NAM5I
+cp ${COMIN}/nammean_${day6}${cyc}V${fhr} NAM6
+$EXECutil/grbindex NAM6 NAM6I
+cp ${COMIN}/nammean_${day7}${cyc}V${fhr} NAM7
+$EXECutil/grbindex NAM7 NAM7I
+
+    export XLFUNIT_11="NAM1"
+    export XLFUNIT_12="NAM1I"
+    export XLFUNIT_13="NAM2"
+    export XLFUNIT_14="NAM2I" 
+    export XLFUNIT_15="NAM3"
+    export XLFUNIT_16="NAM3I"
+    export XLFUNIT_17="NAM4"
+    export XLFUNIT_18="NAM4I" 
+    export XLFUNIT_19="NAM5"
+    export XLFUNIT_20="NAM5I" 
+    export XLFUNIT_21="NAM6"
+    export XLFUNIT_22="NAM6I"
+    export XLFUNIT_23="NAM7"
+    export XLFUNIT_24="NAM7I" 
+    export XLFUNIT_68="NAMMEANFIL${fhr}"
+    $EXEC/weekly_stats <<EOF >> namweekly.out${fhr}
+$fhr
+EOF
+
+   nagrib  <<  EOF
+ GBFILE   = NAMMEANFIL${fhr}
+ INDXFL   =  
+ GDOUTF   = namweekly_${day7}${cyc}V${fhr}
+ PROJ     = MER
+ GRDAREA  =  
+ KXKY     = 10;10
+ MAXGRD   = 2000
+ CPYFIL   = gds
+ GAREA    = grid
+ OUTPUT   = t
+ GBTBLS   =  
+ GBDIAG   =  
+ PDSEXT   = NO
+ OVERWR   = NO
+r
+
+ex
+EOF
+
+chmod 775 namweek*
+mv namweekly_${day7}${cyc}V${fhr} /ptmp/wx20mg/monthly/.
+done
+done
+exit

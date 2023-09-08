@@ -1,0 +1,111 @@
+#!/bin/ksh
+#@ output = /meso/save/wx20mg/monthly_mean/gfsweekly.out
+#@ error = /meso/save/wx20mg/monthly_mean/gfsweekly.err
+#@ job_type = parallel
+#@ class = devhigh
+#@ group = devonprod
+#@ total_tasks = 1
+#@ resources = ConsumableCpus(1) ConsumableMemory(2 GB)
+#@ account_no=NAM-T2O
+#@ wall_clock_limit = 00:49:00
+#@ network.MPI = csss,shared,us
+#@ queue
+#
+
+mkdir /stmp/wx20mg/gfsmonthly
+rm /stmp/wx20mg/gfsmonthly/*
+cd /stmp/wx20mg/gfsmonthly
+cp /meso/save/wx20mg/gempak/nagrib/*tbl .
+
+tmp1=2012061300
+day1=`echo $tmp1 | cut -c1-8`
+tmp2="`/meso/save/wx20mg/board/advtime ${tmp1} 24 -1`"
+day2=`echo $tmp2 | cut -c1-8`
+tmp3="`/meso/save/wx20mg/board/advtime ${tmp2} 24 -1`"
+day3=`echo $tmp3 | cut -c1-8`
+tmp4="`/meso/save/wx20mg/board/advtime ${tmp3} 24 -1`"
+day4=`echo $tmp4 | cut -c1-8`
+tmp5="`/meso/save/wx20mg/board/advtime ${tmp4} 24 -1`"
+day5=`echo $tmp5 | cut -c1-8`
+tmp6="`/meso/save/wx20mg/board/advtime ${tmp5} 24 -1`"
+day6=`echo $tmp6 | cut -c1-8`
+tmp7="`/meso/save/wx20mg/board/advtime ${tmp6} 24 -1`"
+day7=`echo $tmp7 | cut -c1-8`
+
+hours="00 06 12 18 24 30 36 42 48 54 60 66 72 78 84"
+hours="24 48 60 84"
+set -x
+
+cycles="00 06 12 18"
+for cyc in $cycles; do
+for fhr in $hours; do
+
+COMOUT=/meso/noscrub/wx20mg/monthly/gfs
+COMIN=/meso/noscrub/wx20mg/monthly/gfs
+EXECutil=/nwprod/util/exec
+EXEC=/meso/save/wx20mg/monthly_mean/exec
+mkdir $COMOUT
+
+# Set up some constants
+export XLFRTEOPTS="unit_vars=yes"
+export tmmark=tm00
+export MP_SHARED_MEMORY=yes
+
+cp ${COMIN}/gfsmean_${day1}${cyc}V${fhr} GFS1
+$EXECutil/grbindex GFS1 GFS1I 
+cp ${COMIN}/gfsmean_${day2}${cyc}V${fhr} GFS2
+$EXECutil/grbindex GFS2 GFS2I
+cp ${COMIN}/gfsmean_${day3}${cyc}V${fhr} GFS3
+$EXECutil/grbindex GFS3 GFS3I
+cp ${COMIN}/gfsmean_${day4}${cyc}V${fhr} GFS4
+$EXECutil/grbindex GFS4 GFS4I
+cp ${COMIN}/gfsmean_${day5}${cyc}V${fhr} GFS5
+$EXECutil/grbindex GFS5 GFS5I
+cp ${COMIN}/gfsmean_${day6}${cyc}V${fhr} GFS6
+$EXECutil/grbindex GFS6 GFS6I
+cp ${COMIN}/gfsmean_${day7}${cyc}V${fhr} GFS7
+$EXECutil/grbindex GFS7 GFS7I
+
+    export XLFUNIT_11="GFS1"
+    export XLFUNIT_12="GFS1I"
+    export XLFUNIT_13="GFS2"
+    export XLFUNIT_14="GFS2I" 
+    export XLFUNIT_15="GFS3"
+    export XLFUNIT_16="GFS3I"
+    export XLFUNIT_17="GFS4"
+    export XLFUNIT_18="GFS4I" 
+    export XLFUNIT_19="GFS5"
+    export XLFUNIT_20="GFS5I" 
+    export XLFUNIT_21="GFS6"
+    export XLFUNIT_22="GFS6I"
+    export XLFUNIT_23="GFS7"
+    export XLFUNIT_24="GFS7I" 
+    export XLFUNIT_68="GFSMEANFIL${fhr}"
+    $EXEC/weekly_stats <<EOF >> gfsweekly.out${fhr}
+$fhr
+EOF
+
+   nagrib  <<  EOF
+ GBFILE   = GFSMEANFIL${fhr}
+ INDXFL   =
+ GDOUTF   = gfsweekly_${day7}${cyc}V${fhr}
+ PROJ     = MER
+ GRDAREA  =
+ KXKY     = 10;10
+ MAXGRD   = 2000
+ CPYFIL   = gds
+ GAREA    = grid
+ OUTPUT   = t
+ GBTBLS   =
+ GBDIAG   =
+ PDSEXT   = NO
+ OVERWR   = NO
+r
+
+ex
+EOF
+
+cp gfsweekly_${day7}${cyc}V${fhr} /ptmp/wx20mg/monthly/gfsweekly_${day7}${cyc}V${fhr}
+done
+done
+exit

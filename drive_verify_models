@@ -1,0 +1,11 @@
+#!/bin/ksh
+
+set -x
+
+cd /meso/save/Geoffrey.Manikin/monthly_mean
+llsubmit verify_nam.ksh 
+llsubmit verify_gfs.ksh
+llsubmit verify_namx.ksh
+llsubmit verify_namb.ksh
+
+exit

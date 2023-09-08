@@ -1,0 +1,87 @@
+#!/bin/sh
+echo 'into'
+#.gempak
+. /nwprod/gempak/.gempak
+
+mkdir /stmp/wx20mg/gempak
+mkdir /stmp/wx20mg/gempak/trop
+rm /stmp/wx20mg/gempak/trop/*
+cd /stmp/wx20mg/gempak/trop
+cp /meso/save/wx20mg/casework/coltbl.xwp .
+
+ymd=20120521
+
+cycles="00 06 12 18"
+for cyc in $cycles;do
+times="24 60"
+for fhr in $times; do
+
+fmdl=/ptmp/wx20mg/monthly/namweekly_${ymd}${cyc}v${fhr}
+
+    gdplot2 << EOF
+
+ GDFILE   = $fmdl
+ GDATTIM  = f$fhr 
+ GLEVEL   = 0 
+ GVCORD   = none 
+ GDPFUN   = prese 
+ CINT     = 10 
+ LINE     = 0 
+ MAP      = 1
+ WIND     = 0
+ TITLE    = 1/-1/~   SLP ANALYSIS / NAM ERRORS  ${cyc}z f${fhr}
+ DEVICE   = GIF|slpnam_${ymd}_${cyc}f0${fhr}.gif|750;900
+ SATFIL   =
+ RADFIL   =
+ PROJ     = lcc/25;-100;25;/1;1;1;1
+ GAREA    = 15.;-142.;73.;-36.
+ CLEAR    = y
+ PANEL    = 0
+ TEXT     = 1.1/11/2/SW
+ SCALE    = 0 
+ LATLON   = 0
+ HILO     = 23;23/S12#;S13#/1015-1060;920-1014/5/3;4/yes
+ HLSYM    = 2;1/3/21;21/4;2/HW
+ CLRBAR   = 1/H/UL/0.06;0.93/0.7;.02/1
+ CONTUR   = 0
+ SKIP     = 0
+ FINT     = 0
+ FLINE    = 0
+ FINT     = -5;-4;-3;-2;-1;1;2;3;4;5
+ FLINE    = 30;28;4;23;21;0;5;20;10;17;2
+ TYPE     = f
+ LUTFIL   =
+ STNPLT   =
+r
+
+ GDPFUN   = pmsl 
+ CINT     = 4
+ LINE     = 1/1/3/1 
+ TITLE    = 0
+ CLEAR    = n
+ FINT     = 0
+ FLINE    = 0
+ TYPE     = c
+r
+
+ex
+EOF
+
+gpend
+done
+done
+
+. /u/wx20mg/.Utils
+export w1=wd20mg
+export w2=$rzdm
+
+ftp -n -v << EOF > /meso/save/wx20mg/casework/dwpfftp.out
+open rzdm
+user $w1 $w2
+binary
+cd /home/people/emc/www/htdocs/mmb/gmanikin/meg/stats
+mput *.gif
+bye
+EOF
+
+exit

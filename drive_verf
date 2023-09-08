@@ -1,0 +1,26 @@
+#!/bin/ksh
+
+set -x
+
+cyc=$1
+cd /meso/save/Geoffrey.Manikin/monthly/
+
+cp /com/date/t${cyc}z VERDATE
+
+ymdh=`cut -c 7-16 /com/date/t${cyc}z`
+ymd=`cut -c 7-14 /com/date/t${cyc}z`
+ymdhold="`/meso/save/Geoffrey.Manikin/meteograms.nam/advtime ${ymdh} -30 -1`"
+ymdold=`echo $ymdhold | cut -c1-8`
+rm /meso/save/Geoffrey.Manikin/meg/nam*${ymdhold}*
+rm /meso/save/Geoffrey.Manikin/meg/gfs*${ymdhold}*
+
+if [ $cyc -eq 00 -o $cyc -eq 12 ]; then
+./run_nagrib_pcp $cyc
+else
+./run_nagrib_pcp_off $cyc
+fi
+
+cp /com/date/t${cyc}z /meso/save/Geoffrey.Manikin/meg/NMCDATE
+llsubmit run_gempak_poe_short
+
+#exit

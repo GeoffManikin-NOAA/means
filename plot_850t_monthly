@@ -1,0 +1,127 @@
+#!/bin/sh
+echo 'into'
+#.gempak
+. /nwprod/gempak/.gempak
+
+mkdir /stmp/wx20mg/gempak
+mkdir /stmp/wx20mg/gempak/trop
+rm /stmp/wx20mg/gempak/trop/*
+cd /stmp/wx20mg/gempak/trop
+cp /meso/save/wx20mg/casework/coltbl.xwp .
+
+ymd=20120830
+ym=`echo $ymd | cut -c1-6`
+
+cycles="00 06 12 18"
+for cyc in $cycles;do
+times="48 84"
+for fhr in $times; do
+
+fmdl1=/ptmp/wx20mg/monthly/gfsmonthly_${ym}${cyc}v${fhr}
+fmdl2=/ptmp/wx20mg/monthly/nammonthly_${ym}${cyc}v${fhr}
+
+    gdplot2 << EOF
+
+ GDFILE   = $fmdl1
+ GDATTIM  = f$fhr 
+ GLEVEL   = 850 
+ GVCORD   = pres 
+ GDPFUN   = trke 
+ CINT     = 10 
+ LINE     = 0 
+ MAP      = 1
+ WIND     = 0
+ TITLE    = 1/-1/~   850 mb TEMP ANALYSIS / MONTHLY GFS ERRORS  ${cyc}z f${fhr}
+ DEVICE   = GIF|850t_${ym}_${cyc}f0${fhr}.gif|750;900
+ SATFIL   =
+ RADFIL   =
+ PROJ     = lcc/25;-100;25;/1;1;1;1
+ GAREA    = 15.;-142.;75.;-34.
+ CLEAR    = y
+ PANEL    = t
+ TEXT     = 0.8/11/2/SW
+ SCALE    = 0 
+ LATLON   = 0
+ HILO     = 0 
+ HLSYM    = 0
+ CLRBAR   = 1/V/UL/0.06;0.5/0.9;.02/1
+ CONTUR   = 0
+ SKIP     = 0
+ FINT     = -5;-4;-3;-2;-1;1;2;3;4;5
+ FLINE    = 30;28;4;23;21;0;5;20;10;17;2
+ TYPE     = f
+ LUTFIL   =
+ STNPLT   =
+r
+
+ GDPFUN   = tmpc 
+ CINT     = 5
+ LINE     = 1/1/3/1 
+ TITLE    = 0
+ CLEAR    = n
+ FINT     = 0
+ FLINE    = 0
+ TYPE     = c
+r
+
+
+ GDFILE   = $fmdl2
+ GDATTIM  = f$fhr
+ GDPFUN   = trke 
+ CINT     = 10
+ LINE     = 0
+ MAP      = 1
+ WIND     = 0
+ TITLE    = 1/-1/~   850 mb TEMP ANALYSIS / MONTHLY NAM ERRORS  ${cyc}z f${fhr}
+ SATFIL   =
+ RADFIL   =
+ CLEAR    = n
+ PANEL    = b
+ TEXT     = 0.8/11/2/SW
+ SCALE    = 0
+ LATLON   = 0
+ HILO     = 0
+ HLSYM    = 0
+ CLRBAR   = 0 
+ CONTUR   = 0
+ SKIP     = 0
+ FINT     = -10;-8;-6;-4;-2;2;4;6;8;10
+ FLINE    = 30;28;4;23;21;0;5;20;10;17;2
+ TYPE     = f
+ LUTFIL   =
+ STNPLT   =
+r
+
+ GDPFUN   = tmpc 
+ CINT     = 5
+ LINE     = 1/1/3/1
+ TITLE    = 0
+ CLEAR    = n
+ FINT     = 0
+ FLINE    = 0
+ TYPE     = c
+ FINT     = 0 
+ FLINE    = 0
+r
+
+ex
+EOF
+
+gpend
+done
+done
+
+. /u/wx20mg/.Utils
+export w1=wd20mg
+export w2=$rzdm
+
+ftp -n -v << EOF > /meso/save/wx20mg/casework/dwpfftp.out
+open emcrzdm
+user $w1 $w2
+binary
+cd /home/people/emc/www/htdocs/mmb/gmanikin/meg/stats
+mput *.gif
+bye
+EOF
+
+exit

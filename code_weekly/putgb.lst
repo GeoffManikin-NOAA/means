@@ -1,0 +1,346 @@
+IBM XL Fortran for AIX, V12.1 (5724-U82) Version 12.01.0000.0001 --- /gpfs/t3/meso/save/wx20mg/monthly_mean/code_weekly/putgb.f 05/17/12 23:09:38
+ 
+>>>>> OPTIONS SECTION <<<<<
+***   Options In Effect   ***
+  
+         ==  On / Off Options  ==
+         CR              DBG             DDIM            ESCAPE
+         FULLPATH        I4              INLGLUE         NOLIBESSL
+         NOLIBPOSIX      OBJECT          SOURCE          STRICT
+         SWAPOMP         THREADED        UNWIND          NOZEROSIZE
+  
+         ==  Options Of Integer Type ==
+         ALIAS_SIZE(65536)     FIXED(72)             MAXMEM(-1)
+         OPTIMIZE(2)           SPILLSIZE(548)        STACKTEMP(0)
+  
+  
+         ==  Options Of Character Type  ==
+         64(LARGETYPE)         ALIAS(STD,INTPTR)     ALIGN(BINDC(POWER),STRUCT(NATURAL))
+         ARCH(PWR6)            ATTR()                AUTODBL(NONE)
+         DESCRIPTOR(V1)        DIRECTIVE(IBM*,IBMT)  ENUM()
+         FLAG(I,I)             FLOAT(RNDSNGL,MAF,FOLD,RNGCHK,SINGLE)
+         HALT(S)               IEEE(NEAR)            INTSIZE(4)
+         LANGLVL(EXTENDED)     POSITION(APPENDOLD)   REALSIZE(4)
+         NOSAVE()              TUNE(PWR6)            UNROLL(AUTO)
+         XREF(FULL)            XLF2003(NOPOLYMORPHIC,NOBOZLITARGS,NOSTOPEXCEPT,NOVOLATILE,NOAUTOREALLOC,OLDNANINF)
+         XLF77(NOLEADZERO,GEDIT77,NOBLANKPAD,OLDBOZ,INTARG,INTXOR,PERSISTENT,SOFTEOF)
+         XLF90(NOSIGNEDZERO,NOAUTODEALLOC,OLDPAD)
+  
+>>>>> SOURCE SECTION <<<<<
+          1 |C-----------------------------------------------------------------------
+          2 |      SUBROUTINE PUTGB(LUGB,KF,KPDS,KGDS,LB,F,IRET)
+          3 |C$$$  SUBPROGRAM DOCUMENTATION BLOCK
+          4 |C
+          5 |C SUBPROGRAM: PUTGB          PACKS AND WRITES A GRIB MESSAGE
+          6 |C   PRGMMR: IREDELL          ORG: W/NMC23     DATE: 94-04-01
+          7 |C
+          8 |C ABSTRACT: PACK AND WRITE A GRIB MESSAGE.
+          9 |C   THIS SUBPROGRAM IS NEARLY THE INVERSE OF GETGB.
+         10 |C
+         11 |C PROGRAM HISTORY LOG:
+         12 |C   94-04-01  IREDELL
+         13 |C   95-10-31  IREDELL     REMOVED SAVES AND PRINTS
+         14 |C
+         15 |C USAGE:    CALL PUTGB(LUGB,KF,KPDS,KGDS,LB,F,IRET)
+         16 |C   INPUT ARGUMENTS:
+         17 |C     LUGB         INTEGER UNIT OF THE UNBLOCKED GRIB DATA FILE
+         18 |C     KF           INTEGER NUMBER OF DATA POINTS
+         19 |C     KPDS         INTEGER (200) PDS PARAMETERS
+         20 |C          (1)   - ID OF CENTER
+         21 |C          (2)   - GENERATING PROCESS ID NUMBER
+         22 |C          (3)   - GRID DEFINITION
+         23 |C          (4)   - GDS/BMS FLAG (RIGHT ADJ COPY OF OCTET 8)
+         24 |C          (5)   - INDICATOR OF PARAMETER
+         25 |C          (6)   - TYPE OF LEVEL
+         26 |C          (7)   - HEIGHT/PRESSURE , ETC OF LEVEL
+         27 |C          (8)   - YEAR INCLUDING (CENTURY-1)
+         28 |C          (9)   - MONTH OF YEAR
+         29 |C          (10)  - DAY OF MONTH
+         30 |C          (11)  - HOUR OF DAY
+         31 |C          (12)  - MINUTE OF HOUR
+         32 |C          (13)  - INDICATOR OF FORECAST TIME UNIT
+         33 |C          (14)  - TIME RANGE 1
+         34 |C          (15)  - TIME RANGE 2
+         35 |C          (16)  - TIME RANGE FLAG
+         36 |C          (17)  - NUMBER INCLUDED IN AVERAGE
+         37 |C          (18)  - VERSION NR OF GRIB SPECIFICATION
+         38 |C          (19)  - VERSION NR OF PARAMETER TABLE
+         39 |C          (20)  - NR MISSING FROM AVERAGE/ACCUMULATION
+         40 |C          (21)  - CENTURY OF REFERENCE TIME OF DATA
+         41 |C          (22)  - UNITS DECIMAL SCALE FACTOR
+         42 |C          (23)  - SUBCENTER NUMBER
+         43 |C          (24)  - PDS BYTE 29, FOR NMC ENSEMBLE PRODUCTS
+         44 |C                  128 IF FORECAST FIELD ERROR
+         45 |C                   64 IF BIAS CORRECTED FCST FIELD
+         46 |C                   32 IF SMOOTHED FIELD
+         47 |C                  WARNING: CAN BE COMBINATION OF MORE THAN 1
+         48 |C          (25)  - PDS BYTE 30, NOT USED
+         49 |C     KGDS         INTEGER (200) GDS PARAMETERS
+         50 |C          (1)   - DATA REPRESENTATION TYPE
+         51 |C          (19)  - NUMBER OF VERTICAL COORDINATE PARAMETERS
+         52 |C          (20)  - OCTET NUMBER OF THE LIST OF VERTICAL COORDINATE
+         53 |C                  PARAMETERS
+         54 |C                  OR
+         55 |C                  OCTET NUMBER OF THE LIST OF NUMBERS OF POINTS
+         56 |C                  IN EACH ROW
+         57 |C                  OR
+         58 |C                  255 IF NEITHER ARE PRESENT
+         59 |C          (21)  - FOR GRIDS WITH PL, NUMBER OF POINTS IN GRID
+         60 |C          (22)  - NUMBER OF WORDS IN EACH ROW
+         61 |C       LATITUDE/LONGITUDE GRIDS
+         62 |C          (2)   - N(I) NR POINTS ON LATITUDE CIRCLE
+         63 |C          (3)   - N(J) NR POINTS ON LONGITUDE MERIDIAN
+         64 |C          (4)   - LA(1) LATITUDE OF ORIGIN
+         65 |C          (5)   - LO(1) LONGITUDE OF ORIGIN
+         66 |C          (6)   - RESOLUTION FLAG (RIGHT ADJ COPY OF OCTET 17)
+         67 |C          (7)   - LA(2) LATITUDE OF EXTREME POINT
+         68 |C          (8)   - LO(2) LONGITUDE OF EXTREME POINT
+         69 |C          (9)   - DI LONGITUDINAL DIRECTION OF INCREMENT
+         70 |C          (10)  - DJ LATITUDINAL DIRECTION INCREMENT
+         71 |C          (11)  - SCANNING MODE FLAG (RIGHT ADJ COPY OF OCTET 28)
+         72 |C       GAUSSIAN  GRIDS
+         73 |C          (2)   - N(I) NR POINTS ON LATITUDE CIRCLE
+         74 |C          (3)   - N(J) NR POINTS ON LONGITUDE MERIDIAN
+         75 |C          (4)   - LA(1) LATITUDE OF ORIGIN
+         76 |C          (5)   - LO(1) LONGITUDE OF ORIGIN
+         77 |C          (6)   - RESOLUTION FLAG  (RIGHT ADJ COPY OF OCTET 17)
+         78 |C          (7)   - LA(2) LATITUDE OF EXTREME POINT
+         79 |C          (8)   - LO(2) LONGITUDE OF EXTREME POINT
+         80 |C          (9)   - DI LONGITUDINAL DIRECTION OF INCREMENT
+         81 |C          (10)  - N - NR OF CIRCLES POLE TO EQUATOR
+         82 |C          (11)  - SCANNING MODE FLAG (RIGHT ADJ COPY OF OCTET 28)
+         83 |C          (12)  - NV - NR OF VERT COORD PARAMETERS
+         84 |C          (13)  - PV - OCTET NR OF LIST OF VERT COORD PARAMETERS
+         85 |C                             OR
+         86 |C                  PL - LOCATION OF THE LIST OF NUMBERS OF POINTS IN
+         87 |C                       EACH ROW (IF NO VERT COORD PARAMETERS
+         88 |C                       ARE PRESENT
+         89 |C                             OR
+         90 |C                  255 IF NEITHER ARE PRESENT
+         91 |C       POLAR STEREOGRAPHIC GRIDS
+         92 |C          (2)   - N(I) NR POINTS ALONG LAT CIRCLE
+         93 |C          (3)   - N(J) NR POINTS ALONG LON CIRCLE
+         94 |C          (4)   - LA(1) LATITUDE OF ORIGIN
+         95 |C          (5)   - LO(1) LONGITUDE OF ORIGIN
+         96 |C          (6)   - RESOLUTION FLAG  (RIGHT ADJ COPY OF OCTET 17)
+         97 |C          (7)   - LOV GRID ORIENTATION
+         98 |C          (8)   - DX - X DIRECTION INCREMENT
+         99 |C          (9)   - DY - Y DIRECTION INCREMENT
+        100 |C          (10)  - PROJECTION CENTER FLAG
+        101 |C          (11)  - SCANNING MODE (RIGHT ADJ COPY OF OCTET 28)
+        102 |C       SPHERICAL HARMONIC COEFFICIENTS
+        103 |C          (2)   - J PENTAGONAL RESOLUTION PARAMETER
+        104 |C          (3)   - K      "          "         "
+        105 |C          (4)   - M      "          "         "
+        106 |C          (5)   - REPRESENTATION TYPE
+        107 |C          (6)   - COEFFICIENT STORAGE MODE
+        108 |C       MERCATOR GRIDS
+        109 |C          (2)   - N(I) NR POINTS ON LATITUDE CIRCLE
+        110 |C          (3)   - N(J) NR POINTS ON LONGITUDE MERIDIAN
+        111 |C          (4)   - LA(1) LATITUDE OF ORIGIN
+        112 |C          (5)   - LO(1) LONGITUDE OF ORIGIN
+        113 |C          (6)   - RESOLUTION FLAG (RIGHT ADJ COPY OF OCTET 17)
+        114 |C          (7)   - LA(2) LATITUDE OF LAST GRID POINT
+        115 |C          (8)   - LO(2) LONGITUDE OF LAST GRID POINT
+        116 |C          (9)   - LATIT - LATITUDE OF PROJECTION INTERSECTION
+        117 |C          (10)  - RESERVED
+        118 |C          (11)  - SCANNING MODE FLAG (RIGHT ADJ COPY OF OCTET 28)
+        119 |C          (12)  - LONGITUDINAL DIR GRID LENGTH
+        120 |C          (13)  - LATITUDINAL DIR GRID LENGTH
+        121 |C       LAMBERT CONFORMAL GRIDS
+        122 |C          (2)   - NX NR POINTS ALONG X-AXIS
+        123 |C          (3)   - NY NR POINTS ALONG Y-AXIS
+        124 |C          (4)   - LA1 LAT OF ORIGIN (LOWER LEFT)
+        125 |C          (5)   - LO1 LON OF ORIGIN (LOWER LEFT)
+        126 |C          (6)   - RESOLUTION (RIGHT ADJ COPY OF OCTET 17)
+        127 |C          (7)   - LOV - ORIENTATION OF GRID
+        128 |C          (8)   - DX - X-DIR INCREMENT
+        129 |C          (9)   - DY - Y-DIR INCREMENT
+        130 |C          (10)  - PROJECTION CENTER FLAG
+        131 |C          (11)  - SCANNING MODE FLAG (RIGHT ADJ COPY OF OCTET 28)
+        132 |C          (12)  - LATIN 1 - FIRST LAT FROM POLE OF SECANT CONE INTER
+        133 |C          (13)  - LATIN 2 - SECOND LAT FROM POLE OF SECANT CONE INTER
+        134 |C     LB           LOGICAL*1 (KF) BITMAP IF PRESENT
+        135 |C     F            REAL (KF) DATA
+        136 |C   OUTPUT ARGUMENTS:
+        137 |C     IRET         INTEGER RETURN CODE
+        138 |C                    0      ALL OK
+        139 |C                    OTHER  W3FI72 GRIB PACKER RETURN CODE
+        140 |C
+        141 |C SUBPROGRAMS CALLED:
+        142 |C   R63W72         MAP W3FI63 PARAMETERS ONTO W3FI72 PARAMETERS
+        143 |C   GETBIT         GET NUMBER OF BITS AND ROUND DATA
+        144 |C   W3FI72         PACK GRIB
+        145 |C   WRYTE          WRITE DATA
+        146 |C
+        147 |C REMARKS: SUBPROGRAM CAN BE CALLED FROM A MULTIPROCESSING ENVIRONMENT.
+        148 |C   DO NOT ENGAGE THE SAME LOGICAL UNIT FROM MORE THAN ONE PROCESSOR.
+        149 |C
+        150 |C ATTRIBUTES:
+        151 |C   LANGUAGE: FORTRAN 77
+        152 |C   MACHINE:  CRAY, WORKSTATIONS
+        153 |C
+        154 |C$$$
+        155 |      INTEGER KPDS(200),KGDS(200)
+        156 |      LOGICAL*1 LB(KF)
+        157 |      REAL F(KF)
+        158 |      PARAMETER(MAXBIT=16)
+        159 |      INTEGER IBM(KF),IPDS(200),IGDS(200),IBDS(200)
+        160 |      REAL FR(KF)
+        161 |      CHARACTER PDS(400),GRIB(1000+KF*(MAXBIT+1)/8)
+        162 |C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        163 |C  GET W3FI72 PARAMETERS
+        164 |      CALL R63W72(KPDS,KGDS,IPDS,IGDS)
+        165 |      IBDS=0
+        166 |C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        167 |C  COUNT VALID DATA
+        168 |      KBM=KF
+        169 |      IF(IPDS(7).NE.0) THEN
+        170 |        KBM=0
+        171 |        DO I=1,KF
+        172 |          IF(LB(I)) THEN
+        173 |            IBM(I)=1
+        174 |            KBM=KBM+1
+        175 |          ELSE
+        176 |            IBM(I)=0
+        177 |          ENDIF
+        178 |        ENDDO
+        179 |        IF(KBM.EQ.KF) IPDS(7)=0
+        180 |      ENDIF
+        181 |C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        182 |C  GET NUMBER OF BITS AND ROUND DATA
+        183 |      IF(KBM.EQ.0) THEN
+        184 |        DO I=1,KF
+        185 |          FR(I)=0.
+        186 |        ENDDO
+        187 |        NBIT=0
+        188 |      ELSE
+        189 |        print *, 'calling getbit'
+        190 |        CALL GETBIT(IPDS(7),0,IPDS(25),KF,IBM,F,FR,FMIN,FMAX,NBIT)
+        191 |        NBIT=MIN(NBIT,MAXBIT)
+        192 |        print *, 'nbit ', NBIT
+        193 |      ENDIF
+        194 |C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        195 |C  PACK AND WRITE GRIB DATA
+        196 |      CALL W3FI72(0,FR,0,NBIT,0,IPDS,PDS,
+        197 |     &            1,255,IGDS,0,0,IBM,KF,IBDS,
+        198 |     &            KFO,GRIB,LGRIB,IRET)
+        199 |      IF(IRET.EQ.0) CALL WRYTE(LUGB,LGRIB,GRIB)
+        200 |C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        201 |      RETURN
+        202 |      END
+ 
+>>>>> ATTRIBUTE AND CROSS REFERENCE SECTION <<<<<
+ 
+ 
+ 
+IDENTIFIER NAME                  CROSS REFERENCE AND ATTRIBUTES
+ 
+f                                Reference argument, Real(4) (1:?), Offset: 0, Alignment: full word
+                                 0-157.12$  0-2.45  0-190.47
+ 
+fmax                             Automatic, Real(4), Offset: 0, Alignment: full word
+                                 0-190.57
+ 
+fmin                             Automatic, Real(4), Offset: 0, Alignment: full word
+                                 0-190.52
+ 
+fr                               Controlled Automatic, Real(4) (1:?), Offset: 0, Alignment: full word
+                                 0-160.12$  0-185.11@  0-190.49  0-196.21
+ 
+getbit                           External Subroutine
+                                 0-190.14
+ 
+grib                             Controlled Automatic, Character(1) (1:?), Offset: 0, Alignment: full word
+                                 0-161.26$  0-198.23  0-199.43
+ 
+i                                Automatic, Integer(4), Offset: 0, Alignment: full word
+                                 0-171.12@  0-172.17  0-173.17  0-176.17  0-184.12@  0-185.14
+ 
+ibds                             Automatic, Integer(4) (1:200), Offset: 0, Alignment: full word
+                                 0-159.43$  0-165.7@  0-197.41
+ 
+ibm                              Controlled Automatic, Integer(4) (1:?), Offset: 0, Alignment: full word
+                                 0-159.15$  0-173.13@  0-176.13@  0-190.43  0-197.34
+ 
+igds                             Automatic, Integer(4) (1:200), Offset: 0, Alignment: full word
+                                 0-159.33$  0-164.34  0-197.25
+ 
+ipds                             Automatic, Integer(4) (1:200), Offset: 0, Alignment: full word
+                                 0-159.23$  0-164.29  0-169.10  0-179.23@  0-190.21  0-190.31  0-196.33
+ 
+iret                             Reference argument, Integer(4), Offset: 0, Alignment: full word
+                                 0-2.47  0-198.34  0-199.10
+ 
+kbm                              Automatic, Integer(4), Offset: 0, Alignment: full word
+                                 0-168.7@  0-170.9@  0-174.13@  0-174.17  0-179.12  0-183.10
+ 
+kf                               Reference argument, Integer(4), Offset: 0, Alignment: full word
+                                 0-2.29  0-156.20  0-156.20  0-157.14  0-157.14  0-159.19  0-159.19  0-160.15  0-160.15  0-161.36
+                                 0-161.36  0-168.11  0-171.16  0-179.19  0-184.16  0-190.40  0-197.38
+ 
+kfo                              Automatic, Integer(4), Offset: 0, Alignment: full word
+                                 0-198.19
+ 
+kgds                             Reference argument, Integer(4) (1:200), Offset: 0, Alignment: full word
+                                 0-155.25$  0-2.37  0-164.24
+ 
+kpds                             Reference argument, Integer(4) (1:200), Offset: 0, Alignment: full word
+                                 0-155.15$  0-2.32  0-164.19
+ 
+lb                               Reference argument, Logical(1) (1:?), Offset: 0, Alignment: byte
+                                 0-156.17$  0-2.42  0-172.14
+ 
+lgrib                            Automatic, Integer(4), Offset: 0, Alignment: full word
+                                 0-198.28  0-199.37
+ 
+lugb                             Reference argument, Integer(4), Offset: 0, Alignment: full word
+                                 0-2.24  0-199.32
+ 
+maxbit                           Parameter, Integer(4)
+                                 0-158.17$  0-161.40  0-161.40  0-191.23
+ 
+min                              Pure Intrinsic
+                                 0-191.14
+ 
+nbit                             Automatic, Integer(4), Offset: 0, Alignment: full word
+                                 0-187.9@  0-190.62  0-191.9@  0-191.18  0-192.27  0-196.26
+ 
+pds                              Automatic, Character(1) (1:400), Offset: 0, Alignment: full word
+                                 0-161.17$  0-196.38
+ 
+putgb                            Subroutine
+                                 0-2.18$
+ 
+r63w72                           External Subroutine
+                                 0-164.12
+ 
+w3fi72                           External Subroutine
+                                 0-196.12
+ 
+wryte                            External Subroutine
+                                 0-199.26
+ 
+** putgb   === End of Compilation 1 ===
+ 
+>>>>> FILE TABLE SECTION <<<<<
+ 
+ 
+                                       FILE CREATION        FROM
+FILE NO   FILENAME                    DATE       TIME       FILE    LINE
+     0    putgb.f                     05/07/12   10:06:05
+ 
+ 
+>>>>> COMPILATION EPILOGUE SECTION <<<<<
+ 
+ 
+FORTRAN Summary of Diagnosed Conditions
+ 
+TOTAL   UNRECOVERABLE  SEVERE       ERROR     WARNING    INFORMATIONAL
+               (U)       (S)         (E)        (W)          (I)
+    0           0         0           0          0            0
+ 
+ 
+    Source records read.......................................     202
+1501-510  Compilation successful for file putgb.f.
+1501-543  Object file created.

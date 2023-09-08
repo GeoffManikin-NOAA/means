@@ -1,0 +1,257 @@
+#!/bin/ksh --login
+#
+#BSUB -oo /meso/save/Geoffrey.Manikin/monthly_mean/nammonthly.out
+#BSUB -eo /meso/save/Geoffrey.Manikin/monthly_mean/nammonthly.err
+#BSUB -J nammonthly 
+#BSUB -n 1
+#BSUB -R span[ptile=1]
+#BSUB -W 00:30
+#BSUB -P NAM-T2O
+#BSUB -cwd /stmpp1/Geoffrey.Manikin
+#BSUB -q "dev"
+#BSUB -x
+#BSUB -a poe
+
+mkdir /stmpp1/Geoffrey.Manikin/nammonthly
+rm /stmpp1/Geoffrey.Manikin/nammonthly/*
+cd /stmpp1/Geoffrey.Manikin/nammonthly
+cp /meso/save/Geoffrey.Manikin/gempak/nagrib/*tbl .
+
+tmp1=2017010100
+day1=`echo $tmp1 | cut -c1-8`
+tmp2="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp1} 24 -1`"
+day2=`echo $tmp2 | cut -c1-8`
+tmp3="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp2} 24 -1`"
+day3=`echo $tmp3 | cut -c1-8`
+tmp4="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp3} 24 -1`"
+day4=`echo $tmp4 | cut -c1-8`
+tmp5="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp4} 24 -1`"
+day5=`echo $tmp5 | cut -c1-8`
+tmp6="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp5} 24 -1`"
+day6=`echo $tmp6 | cut -c1-8`
+tmp7="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp6} 24 -1`"
+day7=`echo $tmp7 | cut -c1-8`
+tmp8="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp7} 24 -1`"
+day8=`echo $tmp8 | cut -c1-8`
+tmp9="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp8} 24 -1`"
+day9=`echo $tmp9 | cut -c1-8`
+tmp10="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp9} 24 -1`"
+day10=`echo $tmp10 | cut -c1-8`
+tmp11="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp10} 24 -1`"
+day11=`echo $tmp11 | cut -c1-8`
+tmp12="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp11} 24 -1`"
+day12=`echo $tmp12 | cut -c1-8`
+tmp13="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp12} 24 -1`"
+day13=`echo $tmp13 | cut -c1-8`
+tmp14="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp13} 24 -1`"
+day14=`echo $tmp14 | cut -c1-8`
+tmp15="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp14} 24 -1`"
+day15=`echo $tmp15 | cut -c1-8`
+tmp16="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp15} 24 -1`"
+day16=`echo $tmp16 | cut -c1-8`
+tmp17="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp16} 24 -1`"
+day17=`echo $tmp17 | cut -c1-8`
+tmp18="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp17} 24 -1`"
+day18=`echo $tmp18 | cut -c1-8`
+tmp19="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp18} 24 -1`"
+day19=`echo $tmp19 | cut -c1-8`
+tmp20="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp19} 24 -1`"
+day20=`echo $tmp20 | cut -c1-8`
+tmp21="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp20} 24 -1`"
+day21=`echo $tmp21 | cut -c1-8`
+tmp22="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp21} 24 -1`"
+day22=`echo $tmp22 | cut -c1-8`
+tmp23="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp22} 24 -1`"
+day23=`echo $tmp23 | cut -c1-8`
+tmp24="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp23} 24 -1`"
+day24=`echo $tmp24 | cut -c1-8`
+tmp25="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp24} 24 -1`"
+day25=`echo $tmp25 | cut -c1-8`
+tmp26="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp25} 24 -1`"
+day26=`echo $tmp26 | cut -c1-8`
+tmp27="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp26} 24 -1`"
+day27=`echo $tmp27 | cut -c1-8`
+tmp28="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp27} 24 -1`"
+day28=`echo $tmp28 | cut -c1-8`
+tmp29="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp28} 24 -1`"
+day29=`echo $tmp29 | cut -c1-8`
+tmp30="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp29} 24 -1`"
+day30=`echo $tmp30 | cut -c1-8`
+tmp31="`/meso/save/Geoffrey.Manikin/meg/advtime ${tmp30} 24 -1`"
+day31=`echo $tmp31 | cut -c1-8`
+
+ym=`echo $tmp31 | cut -c1-6`
+
+hours="00 06 12 18 24 30 36 42 48 54 60 66 72 78 84"
+hours="24 48 60 84"
+set -x
+
+cycles="00 06 12 18"
+for cyc in $cycles; do
+for fhr in $hours; do
+
+COMOUT=/meso/noscrub/Geoffrey.Manikin/monthly/nam
+COMIN=/meso/noscrub/Geoffrey.Manikin/monthly/nam
+EXECutil=/nwprod/util/exec
+EXEC=/meso/save/Geoffrey.Manikin/monthly_mean/exec
+mkdir $COMOUT
+
+# Set up some constants
+export XLFRTEOPTS="unit_vars=yes"
+export tmmark=tm00
+export MP_SHARED_MEMORY=yes
+
+cp ${COMIN}/nammean_${day1}${cyc}V${fhr} NAM1
+$EXECutil/grbindex NAM1 NAM1I 
+cp ${COMIN}/nammean_${day2}${cyc}V${fhr} NAM2
+$EXECutil/grbindex NAM2 NAM2I
+cp ${COMIN}/nammean_${day3}${cyc}V${fhr} NAM3
+$EXECutil/grbindex NAM3 NAM3I
+cp ${COMIN}/nammean_${day4}${cyc}V${fhr} NAM4
+$EXECutil/grbindex NAM4 NAM4I
+cp ${COMIN}/nammean_${day5}${cyc}V${fhr} NAM5
+$EXECutil/grbindex NAM5 NAM5I
+cp ${COMIN}/nammean_${day6}${cyc}V${fhr} NAM6
+$EXECutil/grbindex NAM6 NAM6I
+cp ${COMIN}/nammean_${day7}${cyc}V${fhr} NAM7
+$EXECutil/grbindex NAM7 NAM7I
+cp ${COMIN}/nammean_${day8}${cyc}V${fhr} NAM8
+$EXECutil/grbindex NAM8 NAM8I
+cp ${COMIN}/nammean_${day9}${cyc}V${fhr} NAM9
+$EXECutil/grbindex NAM9 NAM9I
+cp ${COMIN}/nammean_${day10}${cyc}V${fhr} NAM10
+$EXECutil/grbindex NAM10 NAM10I
+cp ${COMIN}/nammean_${day11}${cyc}V${fhr} NAM11
+$EXECutil/grbindex NAM11 NAM11I
+cp ${COMIN}/nammean_${day12}${cyc}V${fhr} NAM12
+$EXECutil/grbindex NAM12 NAM12I
+cp ${COMIN}/nammean_${day13}${cyc}V${fhr} NAM13
+$EXECutil/grbindex NAM13 NAM13I
+cp ${COMIN}/nammean_${day14}${cyc}V${fhr} NAM14
+$EXECutil/grbindex NAM14 NAM14I
+cp ${COMIN}/nammean_${day15}${cyc}V${fhr} NAM15
+$EXECutil/grbindex NAM15 NAM15I
+cp ${COMIN}/nammean_${day16}${cyc}V${fhr} NAM16
+$EXECutil/grbindex NAM16 NAM16I
+cp ${COMIN}/nammean_${day17}${cyc}V${fhr} NAM17
+$EXECutil/grbindex NAM17 NAM17I
+cp ${COMIN}/nammean_${day18}${cyc}V${fhr} NAM18
+$EXECutil/grbindex NAM18 NAM18I
+cp ${COMIN}/nammean_${day19}${cyc}V${fhr} NAM19
+$EXECutil/grbindex NAM19 NAM19I
+cp ${COMIN}/nammean_${day20}${cyc}V${fhr} NAM20
+$EXECutil/grbindex NAM20 NAM20I
+cp ${COMIN}/nammean_${day21}${cyc}V${fhr} NAM21
+$EXECutil/grbindex NAM21 NAM21I
+cp ${COMIN}/nammean_${day22}${cyc}V${fhr} NAM22
+$EXECutil/grbindex NAM22 NAM22I
+cp ${COMIN}/nammean_${day23}${cyc}V${fhr} NAM23
+$EXECutil/grbindex NAM23 NAM23I
+cp ${COMIN}/nammean_${day24}${cyc}V${fhr} NAM24
+$EXECutil/grbindex NAM24 NAM24I
+cp ${COMIN}/nammean_${day25}${cyc}V${fhr} NAM25
+$EXECutil/grbindex NAM25 NAM25I
+cp ${COMIN}/nammean_${day26}${cyc}V${fhr} NAM26
+$EXECutil/grbindex NAM26 NAM26I
+cp ${COMIN}/nammean_${day27}${cyc}V${fhr} NAM27
+$EXECutil/grbindex NAM27 NAM27I
+cp ${COMIN}/nammean_${day28}${cyc}V${fhr} NAM28
+$EXECutil/grbindex NAM28 NAM28I
+cp ${COMIN}/nammean_${day29}${cyc}V${fhr} NAM29
+$EXECutil/grbindex NAM29 NAM29I
+cp ${COMIN}/nammean_${day30}${cyc}V${fhr} NAM30
+$EXECutil/grbindex NAM30 NAM30I
+cp ${COMIN}/nammean_${day31}${cyc}V${fhr} NAM31
+$EXECutil/grbindex NAM31 NAM31I
+
+    export XLFUNIT_11="NAM1"
+    export XLFUNIT_12="NAM1I"
+    export XLFUNIT_13="NAM2"
+    export XLFUNIT_14="NAM2I" 
+    export XLFUNIT_15="NAM3"
+    export XLFUNIT_16="NAM3I"
+    export XLFUNIT_17="NAM4"
+    export XLFUNIT_18="NAM4I" 
+    export XLFUNIT_19="NAM5"
+    export XLFUNIT_20="NAM5I" 
+    export XLFUNIT_21="NAM6"
+    export XLFUNIT_22="NAM6I"
+    export XLFUNIT_23="NAM7"
+    export XLFUNIT_24="NAM7I" 
+    export XLFUNIT_25="NAM8"
+    export XLFUNIT_26="NAM8I"
+    export XLFUNIT_27="NAM9"
+    export XLFUNIT_28="NAM9I"
+    export XLFUNIT_29="NAM10"
+    export XLFUNIT_30="NAM10I" 
+    export XLFUNIT_31="NAM11"
+    export XLFUNIT_32="NAM11I"
+    export XLFUNIT_33="NAM12"
+    export XLFUNIT_34="NAM12I"
+    export XLFUNIT_35="NAM13"
+    export XLFUNIT_36="NAM13I"
+    export XLFUNIT_37="NAM14"
+    export XLFUNIT_38="NAM14I"
+    export XLFUNIT_39="NAM15"
+    export XLFUNIT_40="NAM15I"
+    export XLFUNIT_41="NAM16"
+    export XLFUNIT_42="NAM16I"
+    export XLFUNIT_43="NAM17"
+    export XLFUNIT_44="NAM17I" 
+    export XLFUNIT_45="NAM18"
+    export XLFUNIT_46="NAM18I"
+    export XLFUNIT_47="NAM19"
+    export XLFUNIT_48="NAM19I"
+    export XLFUNIT_49="NAM20"
+    export XLFUNIT_50="NAM20I" 
+    export XLFUNIT_51="NAM21"
+    export XLFUNIT_52="NAM21I"
+    export XLFUNIT_53="NAM22"
+    export XLFUNIT_54="NAM22I"
+    export XLFUNIT_55="NAM23"
+    export XLFUNIT_56="NAM23I"
+    export XLFUNIT_57="NAM24"
+    export XLFUNIT_58="NAM24I"
+    export XLFUNIT_59="NAM25"
+    export XLFUNIT_60="NAM25I"
+    export XLFUNIT_61="NAM26"
+    export XLFUNIT_62="NAM26I"
+    export XLFUNIT_63="NAM27"
+    export XLFUNIT_64="NAM27I" 
+    export XLFUNIT_65="NAM28"
+    export XLFUNIT_66="NAM28I"
+    export XLFUNIT_67="NAM29"
+    export XLFUNIT_68="NAM29I"
+    export XLFUNIT_69="NAM30"
+    export XLFUNIT_70="NAM30I" 
+    export XLFUNIT_71="NAM31"
+    export XLFUNIT_72="NAM31I"
+    export XLFUNIT_78="NAMMEANFIL${fhr}"
+    $EXEC/monthly_stats_31 <<EOF >> nammonthly.out${fhr}
+$fhr
+EOF
+
+   nagrib  <<  EOF
+ GBFILE   = NAMMEANFIL${fhr}
+ INDXFL   =
+ GDOUTF   = nammonthly_${ym}${cyc}V${fhr}
+ PROJ     = MER
+ GRDAREA  =
+ KXKY     = 10;10
+ MAXGRD   = 2000
+ CPYFIL   = gds
+ GAREA    = grid
+ OUTPUT   = t
+ GBTBLS   =
+ GBDIAG   =
+ PDSEXT   = NO
+ OVERWR   = NO
+r
+
+ex
+EOF
+
+cp nammonthly_${ym}${cyc}V${fhr} /meso/noscrub/Geoffrey.Manikin/monthly/nammonthly/nammonthly_${ym}${cyc}V${fhr}
+done
+done
+exit
